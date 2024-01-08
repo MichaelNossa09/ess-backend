@@ -34,6 +34,7 @@ class LoginController extends Controller
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'cargo' => 'required',
             'name' => 'required',
             'correo' => 'required|email',
             'password' => 'required',
@@ -43,7 +44,7 @@ class LoginController extends Controller
             return response()->json(['exito' => 0, 'error' => $validator->errors()], 422);
         }
 
-        $credentials = $request->only('name', 'correo', 'password');
+        $credentials = $request->only('name', 'correo', 'password', 'cargo');
 
         try {
             $user = User::create($credentials);

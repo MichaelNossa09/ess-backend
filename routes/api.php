@@ -6,6 +6,7 @@ use App\Http\Controllers\EstatusServidoresController;
 use App\Http\Controllers\EventosController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\NodosController;
+use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\PoolEventoController;
 use App\Http\Controllers\PoolsController;
 use App\Http\Controllers\ServidoresController;
@@ -81,6 +82,9 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/estatusDetail', [EstatusServidoresController::class, 'store'])->name('store');
     Route::put('/estatusDetail/{id}', [EstatusServidoresController::class, 'update'])->name('update');
     Route::delete('/estatusDetail/{id}', [EstatusServidoresController::class, 'destroy'])->name('destroy');
+
+    Route::get('/notificaciones', [NotificacionController::class, 'index'])->name('index');
+    Route::post('/notificaciones', [NotificacionController::class, 'store'])->name('store');
 });
 
 
