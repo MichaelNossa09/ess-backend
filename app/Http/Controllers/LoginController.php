@@ -38,13 +38,14 @@ class LoginController extends Controller
             'name' => 'required',
             'correo' => 'required|email',
             'password' => 'required',
+            'rol' => 'required',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['exito' => 0, 'error' => $validator->errors()], 422);
         }
 
-        $credentials = $request->only('name', 'correo', 'password', 'cargo');
+        $credentials = $request->only('name', 'correo', 'password', 'cargo', 'rol');
 
         try {
             $user = User::create($credentials);
