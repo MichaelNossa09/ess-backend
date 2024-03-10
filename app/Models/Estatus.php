@@ -15,6 +15,7 @@ class Estatus extends Model
         'v_fisica_2',
         'aprobado_por',
         'observaciones',
+        'estado',
     ];
 
     public function servidores()

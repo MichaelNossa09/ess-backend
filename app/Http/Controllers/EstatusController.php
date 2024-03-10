@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Estatus;
+use Aws\Exception\AwsException;
+use Aws\S3\S3Client;
+use Exception;
 use Illuminate\Http\Request;
 
 class EstatusController extends Controller
@@ -28,29 +31,66 @@ class EstatusController extends Controller
     {
         $request->validate([
             'registrado_por' => 'required|string',
-            'v_fisica_1' => 'required|file|mimes:jpg,png,jpeg|max:1024',
-            'v_fisica_2' => 'required|file|mimes:jpg,png,jpeg|max:1024',
+            'v_fisica_1' => 'required|file|mimes:jpg,png,jpeg|max:2040',
+            'v_fisica_2' => 'required|file|mimes:jpg,png,jpeg|max:2040',
+            'estado' => 'required|string'
         ]);
+        try {
+            $awsAccessKeyId = env('AWS_ACCESS_KEY_ID');
+            $awsSecretAccessKey = env('AWS_SECRET_ACCESS_KEY');
 
-        $imagePath1 = $request->file('v_fisica_1')->store('estatus', 'public');
-        $imagePath2 = $request->file('v_fisica_2')->store('estatus', 'public');
+            if (empty($awsAccessKeyId) || empty($awsSecretAccessKey)) {
+                throw new Exception('Missing AWS credentials in environment variables!');
+            }
+            $s3Client = new S3Client([
+                'region' => 'us-east-2',
+                'version' => 'latest',
+                'credentials' => [
+                    'key' => $awsAccessKeyId,
+                    'secret' => $awsSecretAccessKey,
+                ],
+            ]);
 
-        $estatus = new Estatus([
-            'registrado_por' => $request->registrado_por,
-            'v_fisica_1' => $imagePath1,
-            'v_fisica_2' => $imagePath2
-        ]);
+            $imagePath1 = $request->file('v_fisica_1');
+            $imagePath2 = $request->file('v_fisica_2');
 
-        $estatus->save();
+            $name1 = 'estatus/' . uniqid() . $imagePath1->getClientOriginalName();
+            $name2 = 'estatus/' . uniqid() . $imagePath2->getClientOriginalName();
 
-        return response()->json($estatus, 201);
+            $s3Client->putObject([
+                'Bucket' => env('AWS_BUCKET'),
+                'Key' => $name1,
+                'Body' => fopen($imagePath1->getPathname(), 'r'),
+            ]);
+
+            $s3Client->putObject([
+                'Bucket' => env('AWS_BUCKET'),
+                'Key' => $name2,
+                'Body' => fopen($imagePath2->getPathname(), 'r'),
+            ]);
+
+            $estatus = new Estatus([
+                'registrado_por' => $request->registrado_por,
+                'v_fisica_1' => $name1,
+                'v_fisica_2' => $name2,
+                'estado' => $request->estado
+            ]);
+
+            $estatus->save();
+            return response()->json($estatus, 201);
+        } catch (AwsException $e) {
+            return response()->json(['errorAws' => $e->getMessage()], 400);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
     }
 
     public function update(Request $request, $id)
     {
         $request->validate([
-            'aprobado_por' => 'required|string',
-            'observaciones' => 'string',
+            'estado' => 'sometimes|string',
+            'aprobado_por' => 'sometimes|string',
+            'observaciones' => 'sometimes|string',
         ]);
 
         $estatus = Estatus::findOrFail($id);

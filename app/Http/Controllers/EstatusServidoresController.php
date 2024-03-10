@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Estatus;
 use App\Models\EstatusServidor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class EstatusServidoresController extends Controller
 {
@@ -56,11 +57,11 @@ class EstatusServidoresController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'almacenamiento_disponible' => 'numeric',
-            'almacenamiento_ocupado' => 'numeric',
-            'cpu' => 'numeric',
-            'memoria' => 'numeric',
-            'consumo_de_red' => 'numeric',
+            'almacenamiento_disponible' => 'sometimes|numeric',
+            'almacenamiento_ocupado' => 'sometimes|numeric',
+            'cpu' => 'sometimes|numeric',
+            'memoria' => 'sometimes|numeric',
+            'consumo_de_red' => 'sometimes|numeric',
         ]);
         $estatusServidor = EstatusServidor::findOrFail($id);
 
@@ -96,5 +97,15 @@ class EstatusServidoresController extends Controller
         $estatus = Estatus::findOrFail($estatusId);
         $servers = $estatus->servidores;
         return response()->json($servers, 200);
+    }
+
+    public function getServersWithStatus($estatusId)
+    {
+        $servers = DB::table('estatus_servidor')
+            ->select('*')
+            ->where('estatus_id', $estatusId)
+            ->get();
+
+        return response()->json(['servers' => $servers]);
     }
 }

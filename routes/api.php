@@ -79,6 +79,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/estatusDetail', [EstatusServidoresController::class, 'index'])->name('indexEstatuDetail');
     Route::get('/estatusDetail/{id}', [EstatusServidoresController::class, 'show'])->name('showEstatuDetail');
     Route::get('/estatusDetail/{estatusId}/servidores', [EstatusServidoresController::class, 'getServersByEstatus'])->name('getServersByEstatusEstatuDetail');
+    Route::get('/estatusServers/{id}', [EstatusServidoresController::class, 'getServersWithStatus'])->name('getStatusServers');
     Route::post('/estatusDetail', [EstatusServidoresController::class, 'store'])->name('store');
     Route::put('/estatusDetail/{id}', [EstatusServidoresController::class, 'update'])->name('updateEstatuDetail');
     Route::delete('/estatusDetail/{id}', [EstatusServidoresController::class, 'destroy'])->name('destroyEstatuDetail');
